@@ -1,0 +1,7 @@
+services:
+  ma-valentine:
+    build: .
+    container_name: valentine_site
+    ports:
+      - "8069:8080"
+    restart: always

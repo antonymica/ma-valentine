@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Veux-tu être ma Valentine ? 🌹</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- RESET & BASE --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* Empêche la sélection de texte */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* --- BACKGROUND --- */
+        #emoji-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-emoji {
+            position: absolute;
+            opacity: 0.2;
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* --- CANVAS CÉLÉBRATION --- */
+        #celebration-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* --- CARTE PRINCIPALE --- */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: clamp(20px, 5vmin, 40px);
+            border-radius: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #f0f0f0;
+        }
+
+        h1 {
+            font-family: 'Dancing Script', cursive;
+            color: #ff3366;
+            font-size: clamp(2rem, 8vmin, 3.5rem);
+            margin-bottom: 10px;
+            line-height: 1.1;
+        }
+
+        .main-emoji {
+            font-size: clamp(3rem, 10vmin, 5rem);
+            margin: 10px 0;
+            animation: heartBeat 1.5s infinite;
+        }
+
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            15% { transform: scale(1.15); }
+            30% { transform: scale(1); }
+        }
+
+        .quote-box {
+            background: #fff0f5;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #ff3366;
+            width: 100%;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quote-text {
+            font-size: clamp(0.9rem, 3.5vmin, 1.1rem);
+            color: #444;
+            font-style: italic;
+        }
+
+        .question {
+            font-size: clamp(1rem, 4vmin, 1.2rem);
+            color: #666;
+            margin: 15px 0 30px 0;
+        }
+
+        /* --- BOUTONS --- */
+        .buttons-area {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+            position: relative;
+            min-height: 60px; /* Espace réservé */
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: clamp(1rem, 4vmin, 1.2rem);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            white-space: nowrap;
+            z-index: 20;
+        }
+
+        #yesBtn {
+            background: #ff3366;
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 51, 102, 0.3);
+        }
+
+        #yesBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 51, 102, 0.4);
+        }
+
+        #noBtn {
+            background: #e0e0e0;
+            color: #666;
+            position: relative; /* Initialement dans le flux */
+            transition: top 0.2s ease-out, left 0.2s ease-out; /* Mouvement fluide */
+        }
+
+        /* Quand le bouton fuit, il sort du flux */
+        #noBtn.fleeing {
+            position: fixed;
+            z-index: 100;
+        }
+
+        /* Quand le bouton est fatigué */
+        #noBtn.tired {
+            position: fixed !important; /* Reste fixé à sa dernière position */
+            background: #555;
+            color: #fff;
+            animation: shake 2s infinite;
+            cursor: pointer !important;
+            transition: none; /* Plus de mouvement fluide */
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+
+        /* --- MODALES --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000; /* Très haut pour couvrir tout */
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 90%;
+            width: 420px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #f0f0f0;
+            color: #555;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0;
+            transition: all 0.2s;
+        }
+
+        .close-modal:hover {
+            background: #ff3366;
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .modal-img {
+            width: 100%;
+            max-height: 40vh;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 3px solid #ff3366;
+        }
+
+        .modal-text {
+            font-size: 1.1rem;
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .return-btn {
+            background: #333;
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="emoji-bg"></div>
+    
+    <canvas id="celebration-canvas"></canvas>
+
+    <div class="card">
+        <h1>Ma Valentine ?</h1>
+        <div class="main-emoji">💝</div>
+        
+        <div class="quote-box">
+            <div class="quote-text" id="quoteText">Chargement...</div>
+        </div>
+        
+        <p class="question">Accepterais-tu de rendre ce jour magique ?</p>
+        
+        <div class="buttons-area">
+            <button id="yesBtn">OUI ! 💕</button>
+            <button id="noBtn">Non</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="successModal">
+        <div class="modal-content">
+            <button class="close-modal" id="closeSuccess">×</button>
+            <div style="font-size: 5rem; margin-bottom: 10px;">🥰</div>
+            <h2 style="color: #ff3366; margin-bottom: 10px; font-family: 'Dancing Script'; font-size: 2.5rem;">Yaaay !</h2>
+            <p class="modal-text">Tu viens de rendre mon cœur le plus heureux du monde !<br><b>Je t'aime ! ❤️</b></p>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="errorModal">
+        <div class="modal-content">
+            <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.pinimg.com%2Foriginals%2F2a%2F2f%2Fa0%2F2a2fa0db3179d4b4ec39d1a8a1eeda7d.jpg%3Fnii%3Dt&f=1&nofb=1&ipt=c000d9c0daeb140a672b198130c5b678d5bd34f9e46c6fbe677c2ae221b67218" alt="Angry" class="modal-img">
+            <p class="modal-text" id="errorText">Erreur</p>
+            <button class="return-btn" id="returnBtn">Retour 🔙</button>
+        </div>
+    </div>
+
+    <script>
+        // --- VARIABLES ---
+        const quotes = [
+            "Tu es mon aujourd'hui et tous mes demains.",
+            "L'amour n'est pas ce qu'on trouve, c'est ce qu'on construit.",
+            "Mon endroit préféré est dans tes bras.",
+            "Je t'aime plus qu'hier moins que demain.",
+            "Tu es la plus belle chose qui me soit arrivée."
+        ];
+
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        const quoteText = document.getElementById('quoteText');
+        
+        // Modales
+        const successModal = document.getElementById('successModal');
+        const errorModal = document.getElementById('errorModal');
+        const errorText = document.getElementById('errorText');
+        const closeSuccess = document.getElementById('closeSuccess');
+        const returnBtn = document.getElementById('returnBtn');
+
+        let isTired = false;
+
+        // --- 1. BACKGROUND ---
+        function initBg() {
+            const container = document.getElementById('emoji-bg');
+            const emojis = ['🌹', '💖', '💌', '🍬', '✨'];
+            // Plus d'emojis pour un effet rempli
+            for(let i=0; i<30; i++) {
+                const el = document.createElement('div');
+                el.className = 'bg-emoji';
+                el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+                el.style.left = Math.random()*100 + '%';
+                el.style.fontSize = (Math.random()*20 + 15) + 'px';
+                el.style.animationDuration = (Math.random()*15 + 10) + 's';
+                el.style.animationDelay = (Math.random()*-20) + 's';
+                container.appendChild(el);
+            }
+        }
+        initBg();
+
+        // --- 2. CITATIONS ---
+        let qIdx = 0;
+        function rotateQuote() {
+            quoteText.style.opacity = 0;
+            setTimeout(() => {
+                quoteText.textContent = `"${quotes[qIdx]}"`;
+                quoteText.style.opacity = 1;
+                quoteText.style.transition = 'opacity 0.5s';
+                qIdx = (qIdx + 1) % quotes.length;
+            }, 500);
+        }
+        rotateQuote();
+        setInterval(rotateQuote, 5000);
+
+        // --- 3. LOGIQUE BOUTON "NON" ---
+        
+        // Timer de 60 secondes pour la fatigue
+        setTimeout(() => {
+            isTired = true;
+            
+            // On fige la position ACTUELLE (calculée par rapport à la fenêtre)
+            const rect = noBtn.getBoundingClientRect();
+            
+            // On applique ces coordonnées fixes
+            noBtn.style.position = 'fixed';
+            noBtn.style.left = rect.left + 'px';
+            noBtn.style.top = rect.top + 'px';
+            
+            // On applique le style fatigué
+            noBtn.classList.add('tired');
+            noBtn.innerHTML = "Non 🥵";
+            
+        }, 60000); // 60 secondes
+
+        function moveBtn() {
+            if(isTired) return;
+
+            // Passage en mode "fuite" (fixed) si ce n'est pas déjà fait
+            if(!noBtn.classList.contains('fleeing')) {
+                noBtn.classList.add('fleeing');
+            }
+
+            // Calcul aléatoire
+            const maxX = window.innerWidth - noBtn.offsetWidth - 20;
+            const maxY = window.innerHeight - noBtn.offsetHeight - 20;
+            const x = Math.random() * Math.max(0, maxX);
+            const y = Math.random() * Math.max(0, maxY);
+
+            noBtn.style.left = Math.max(10, x) + 'px';
+            noBtn.style.top = Math.max(10, y) + 'px';
+        }
+
+        noBtn.addEventListener('mouseover', moveBtn);
+        noBtn.addEventListener('touchstart', (e) => {
+            if(!isTired) {
+                e.preventDefault();
+                moveBtn();
+            }
+        });
+
+        // Clic sur Non (seulement si fatigué)
+        noBtn.addEventListener('click', () => {
+            if(isTired) {
+                showError("Ah non ! 😈<br>Même fatigué, je refuse d'être cliqué !<br>Réessaie avec le bouton rose !");
+            }
+        });
+
+        // --- 4. ANTI-TRICHE (Renforcé) ---
+        const cheatMsg = "Petit curieux ! 🕵️‍♂️<br>L'inspection du code est interdite !<br>Concentre-toi sur la question ❤️";
+
+        function triggerCheat() {
+            showError(cheatMsg);
+            return false;
+        }
+
+        // Désactiver clic droit
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            triggerCheat();
+        });
+
+        // Désactiver raccourcis clavier (F12, Ctrl+U, Ctrl+Shift+I/J/C)
+        document.addEventListener('keydown', (e) => {
+            if (
+                e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
+                (e.ctrlKey && e.key.toUpperCase() === 'U')
+            ) {
+                e.preventDefault();
+                triggerCheat();
+            }
+        });
+
+        // --- 5. SUCCÈS & RELOAD ---
+        yesBtn.addEventListener('click', () => {
+            successModal.style.display = 'flex';
+            startCelebration();
+        });
+
+        // Clic sur la croix du succès -> RELOAD PAGE
+        closeSuccess.addEventListener('click', () => {
+            window.location.reload(); 
+        });
+
+        // --- 6. MODALE ERREUR ---
+        function showError(msg) {
+            errorText.innerHTML = msg;
+            errorModal.style.display = 'flex';
+        }
+        
+        returnBtn.addEventListener('click', () => {
+            errorModal.style.display = 'none';
+        });
+
+        // --- 7. CÉLÉBRATION (CANVAS) ---
+        const canvas = document.getElementById('celebration-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let animId;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = canvas.width / 2;
+                this.y = canvas.height / 2;
+                this.size = Math.random() * 15 + 5;
+                this.speedX = Math.random() * 10 - 5;
+                this.speedY = Math.random() * 10 - 5;
+                this.color = `hsl(${Math.random()*360}, 100%, 60%)`;
+                this.type = Math.random() > 0.5 ? 'heart' : 'circle';
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.size *= 0.96;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                if(this.type === 'circle') {
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+                    ctx.fill();
+                } else {
+                    ctx.font = `${this.size*2}px Arial`;
+                    ctx.fillText('❤️', this.x, this.y);
+                }
+            }
+        }
+
+        function startCelebration() {
+            particles = [];
+            function animate() {
+                ctx.clearRect(0,0,canvas.width, canvas.height);
+                // Créer des particules (explosion continue)
+                if(particles.length < 200) {
+                    for(let i=0; i<5; i++) particles.push(new Particle());
+                }
+                
+                for(let i=0; i<particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+                    if(particles[i].size < 0.5) {
+                        particles.splice(i, 1);
+                        i--;
+                    }
+                }
+                animId = requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+    </script>
+</body>
+</html>
