@@ -44,19 +44,20 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Se connecter au registre GitHub sur le serveur
+            # Connexion au registre
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
-            # Stopper l'ancien conteneur s'il existe
+            # Mise à jour du conteneur
             docker stop valentine_site || true
             docker rm valentine_site || true
-            
-            # Récupérer la dernière version de l'image
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             
-            # Lancer le nouveau conteneur (on garde le port 80:8080 pour la sécurité)
+            # Lancement sur le port 8069
             docker run -d \
               --name valentine_site \
               --restart always \
               -p 8069:8080 \
               ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+            # Déconnexion immédiate pour libérer le registre
+            docker logout ghcr.io
